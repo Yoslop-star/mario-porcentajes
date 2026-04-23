@@ -1,18 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title> Ven a jugar con Mario y los Porcentajes</title>
+  <title> Juego con Mario y los Porcentajes</title>
+
   <style>
     body {
+      margin: 0;
       text-align: center;
       font-family: Arial;
-      background-color: #5c94fc;
+      background: linear-gradient(#5c94fc, #87ceeb);
       color: white;
+      overflow: hidden;
     }
 
     h1 { color: yellow; }
 
-    img { width: 150px; }
+    #pantallaInicio {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: black;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #juego {
+      display: none;
+      padding-top: 20px;
+    }
 
     button {
       padding: 15px;
@@ -30,16 +48,44 @@
     .opcion:hover {
       background-color: #ffaa00;
     }
+
+    #mario {
+      width: 120px;
+      position: relative;
+      animation: mover 2s infinite alternate;
+    }
+
+    @keyframes mover {
+      from { left: -50px; }
+      to { left: 50px; }
+    }
+
+    #suelo {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 60px;
+      background: green;
+    }
+
   </style>
 </head>
+
 <body>
 
-<h1>🍄 Mario y los Porcentajes 🍄</h1>
+<!-- PANTALLA INICIO -->
+<div id="pantallaInicio">
+  <h1>🍄 Mario y los Porcentajes 🍄</h1>
+  <button onclick="iniciarJuego()">▶️ Iniciar Juego</button>
+</div>
 
-<img src="https://upload.wikimedia.org/wikipedia/en/a/a9/MarioNSMBUDeluxe.png">
+<!-- JUEGO -->
+<div id="juego">
 
-<p id="nivel">Nivel 1</p>
+<h1>🍄 Nivel <span id="nivel">1</span> 🍄</h1>
 <p id="vidas">❤️❤️❤️</p>
+
+<img id="mario" src="https://upload.wikimedia.org/wikipedia/en/a/a9/MarioNSMBUDeluxe.png">
 
 <p id="pregunta"></p>
 
@@ -50,12 +96,17 @@
 <p id="resultado"></p>
 <p>Puntos: <span id="puntos">0</span></p>
 
+</div>
+
+<div id="suelo"></div>
+
 <!-- SONIDOS -->
 <audio id="musica" loop src="https://files.catbox.moe/7r3q6m.mp3"></audio>
-<audio id="error" src="https://files.catbox.moe/8p0l5h.mp3"></audio>
+<audio id="salto" src="https://files.catbox.moe/8p0l5h.mp3"></audio>
 <audio id="win" src="https://files.catbox.moe/yj9x2g.mp3"></audio>
 
 <script>
+
 let preguntas = [
   {texto: "¿Cuánto es el 50% de 200?", opciones: ["100","50","150"], correcta: 0},
   {texto: "¿Cuánto es el 25% de 80?", opciones: ["20","40","10"], correcta: 0},
@@ -71,12 +122,12 @@ let puntos = 0;
 let vidas = 3;
 let nivel = 1;
 
-function iniciarMusica() {
+function iniciarJuego() {
+  document.getElementById("pantallaInicio").style.display = "none";
+  document.getElementById("juego").style.display = "block";
   document.getElementById("musica").play();
+  cargarPregunta();
 }
-
-// iniciar música al primer clic (por políticas del navegador)
-document.body.addEventListener("click", iniciarMusica, { once: true });
 
 function cargarPregunta() {
   document.getElementById("pregunta").innerText = preguntas[actual].texto;
@@ -84,18 +135,25 @@ function cargarPregunta() {
   document.getElementById("op1").innerText = preguntas[actual].opciones[1];
   document.getElementById("op2").innerText = preguntas[actual].opciones[2];
 
-  document.getElementById("nivel").innerText = "Nivel " + nivel;
+  document.getElementById("nivel").innerText = nivel;
   document.getElementById("vidas").innerText = "❤️".repeat(vidas);
 }
 
 function responder(op) {
+
+  let mario = document.getElementById("mario");
+
+  // animación de salto
+  mario.style.transform = "translateY(-50px)";
+  setTimeout(() => mario.style.transform = "translateY(0px)", 300);
+
   if (op == preguntas[actual].correcta) {
     puntos++;
     document.getElementById("resultado").innerText = "🍄 ¡Correcto!";
   } else {
     vidas--;
     document.getElementById("resultado").innerText = "💥 Perdiste una vida";
-    document.getElementById("error").play();
+    document.getElementById("salto").play();
   }
 
   actual++;
@@ -107,20 +165,17 @@ function responder(op) {
 
   if (vidas <= 0) {
     document.getElementById("pregunta").innerText = "💀 Game Over";
-    document.getElementById("resultado").innerText = "Bowser ganó";
     return;
   }
 
   if (actual < preguntas.length) {
     cargarPregunta();
   } else {
-    document.getElementById("pregunta").innerText = "🏁 ¡Nivel completado!";
-    document.getElementById("resultado").innerText = "Ganaste 👑";
+    document.getElementById("pregunta").innerText = "🏁 ¡Ganaste!";
     document.getElementById("win").play();
   }
 }
 
-cargarPregunta();
 </script>
 
 </body>
